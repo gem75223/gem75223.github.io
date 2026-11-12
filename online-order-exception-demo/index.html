@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>線上訂單異常處理｜PX Pay 後台 DEMO</title>
+  <style>
+    :root { --nav:#30363d;--nav2:#262b31;--blue:#1677d2;--blue2:#0967bb;--line:#d9dde1;--light:#f4f6f9;--head:#eceeef;--ink:#243446;--muted:#718095;--white:#fff; }
+    *{box-sizing:border-box}
+    body{margin:0;background:#f5f7fa;color:var(--ink);font-family:Arial,"Microsoft JhengHei","Noto Sans TC",sans-serif;font-size:14px}
+    button,input{font:inherit}
+    button{cursor:pointer}
+    .app{display:flex;min-height:100vh}
+    .sidebar{width:240px;min-width:240px;background:var(--nav);color:white;display:flex;flex-direction:column;box-shadow:2px 0 3px #17222b1a;min-height:100vh}
+    .brand{height:69px;display:flex;align-items:center;padding:0 20px;gap:10px;background:#292e35;border-bottom:1px solid #414850;font-weight:700;font-size:16px;letter-spacing:.4px}
+    .brand-icon{display:grid;place-items:center;width:28px;height:28px;border-radius:6px;background:#287dc5;color:white;font-size:14px}
+    .menu{padding-top:4px}
+    .nav-item{height:63px;display:flex;align-items:center;gap:15px;padding:0 18px;color:#fafafa;font-weight:600;user-select:none}
+    .nav-symbol{width:18px;text-align:center;font-size:18px}
+    .nav-item .chevron{margin-left:auto;color:#8795a2}
+    .nav-item.parent-active{height:52px;background:#333b42}
+    .subnav{display:flex;flex-direction:column}
+    .subnav button{display:block;width:100%;height:48px;border:0;text-align:left;background:transparent;color:#fff;padding:0 18px 0 53px;font-weight:600}
+    .subnav button:hover{background:#3b4b58}
+    .subnav button.active{background:#1a78d1}
+    .sidebar-footer{margin-top:auto;font-size:12px;color:#aab4bf;padding:18px;line-height:1.8;border-top:1px solid #46505a}
+    .main{min-width:0;flex:1}
+    .header{height:68px;background:#f0f2f5;border-bottom:1px solid #e3e6e9;display:flex;align-items:center;padding:0 25px;gap:12px}
+    .header h1{font-size:27px;margin:0;font-weight:700;color:#223e51}
+    .pill{font-size:11px;letter-spacing:.3px;border:1px solid #b9d9f4;background:#edf7ff;color:#176aad;border-radius:30px;padding:4px 9px;font-weight:700}
+    .header-note{margin-left:auto;font-size:12px;color:#778394}
+    .workspace{padding:22px 24px 38px}
+    .panel{background:white;border-radius:4px;border:1px solid #e4e6e9;box-shadow:0 1px 2px #2532410b;padding:19px 18px 22px}
+    .panel-top{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin:1px 0 18px}
+    .searchbox{width:430px;max-width:100%;height:44px;border-radius:4px;border:1px solid #c7cbd1;display:flex;align-items:center;gap:10px;padding:0 12px;color:#8e9aa6;background:#fff}
+    .searchbox:focus-within{border-color:#5ba3dd;box-shadow:0 0 0 2px #d9edff}
+    .searchbox input{border:0;outline:none;width:100%;height:100%;color:#344355}
+    .searchbox input::placeholder{color:#9da4ac}
+    .searchbtn{border:none;color:white;background:var(--blue);padding:0 22px;height:44px;border-radius:4px;font-weight:700;box-shadow:0 2px 4px #0b56a933}
+    .searchbtn:hover{background:var(--blue2)}
+    .ghostbtn{height:44px;border:1px solid #c7d0d8;background:#fff;border-radius:4px;color:#4b5e6d;padding:0 17px}
+    .ghostbtn:hover{background:#f3f7fa}
+    .panel-caption{font-size:12px;color:#7d8894;margin-left:auto}
+    .examples{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:-5px 0 17px;color:#8793a0;font-size:12px}
+    .example-btn{border:1px solid #d6e2ed;background:#f3f8fc;color:#20679e;padding:5px 9px;border-radius:4px;font-size:12px}
+    .example-btn:hover{background:#e8f3fc}
+    .table-wrap{overflow:auto;width:100%;border:1px solid var(--line);border-radius:3px}
+    table{border-collapse:collapse;width:100%;min-width:1080px;text-align:center}
+    thead{background:#eee}
+    th{padding:15px 12px;font-size:14px;border-right:1px solid #d4d4d4;color:#172b3d;white-space:nowrap}
+    th:last-child{border-right:0}
+    td{padding:12px 9px;border-top:1px solid #e7e8ea;border-right:1px solid #ededee;color:#3d4b59;vertical-align:middle}
+    td:last-child{border-right:0}
+    tbody tr{cursor:pointer;transition:background .15s}
+    tbody tr:hover{background:#f0f7fd}
+    tbody tr.selected{background:#e7f3ff}
+    .order{font-weight:700;color:#1b71b9}
+    .status{display:inline-block;border-radius:4px;padding:4px 7px;font-size:12px;font-weight:700}
+    .status.good{color:#147b4e;background:#e5f6eb}
+    .status.bad{color:#bb343b;background:#fff0ee}
+    .substatus{margin-top:5px;color:#8a94a0;font-size:11px}
+    .yes{color:#8a5f0f}.no{color:#697582}
+    .amount{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+    .small-currency{color:#8494a2;font-size:11px;margin-right:3px}
+    .empty{padding:40px 10px!important;text-align:center;color:#8a94a2}
+    .resultrow{display:flex;justify-content:space-between;align-items:center;margin:13px 1px 20px;font-size:12px;color:#7d8a96}
+    .chosen{color:#306f9e;font-weight:600}
+    .action-area{border-top:1px solid #e5e8ea;padding-top:20px}
+    .action-title{font-weight:700;margin-bottom:12px;font-size:15px;color:#293b4b}
+    .actions{display:flex;gap:10px;flex-wrap:wrap}
+    .refund-btn{padding:12px 19px;background:#1677d2;color:#fff;border:1px solid #1677d2;border-radius:4px;font-weight:700;min-height:43px}
+    .refund-btn.refund-alt{background:#fff;color:#1677d2}
+    .refund-btn:not(:disabled):hover{filter:brightness(.94)}
+    .refund-btn:disabled{background:#cbd3db;border-color:#cbd3db;color:#f9f9f9;cursor:not-allowed}
+    .refund-btn.refund-alt:disabled{background:#f5f5f5;color:#b0b9c0;border-color:#d8dce0}
+    .helper{margin:11px 0 0;color:#8994a0;font-size:12px}
+    .notes{margin-top:19px;border:1px solid #e0e4e8;background:white;border-radius:4px;padding:16px 18px}
+    .notes h3{font-size:15px;margin:0 0 9px;color:#30475c}
+    .notes ol{margin:0;padding-left:23px;line-height:2.1;color:#4d5f70}
+    .notes .warn{font-size:12px;color:#91641c;margin-top:7px}
+    .log{margin-top:19px;border:1px solid #dde2e7;background:#fff;border-radius:4px;padding:15px 18px}
+    .log strong{font-size:14px}.log p{margin:8px 0 0;color:#788593;font-size:13px}
+    .placeholder{padding:75px 20px;text-align:center;color:#7a8793}
+    .placeholder .big{font-size:46px;margin-bottom:15px}
+    .placeholder h2{margin:0 0 12px;color:#344c61;font-size:21px}
+    .placeholder p{line-height:1.8;margin:0}
+    .modal-backdrop{position:fixed;inset:0;background:#0c1928a6;display:none;align-items:center;justify-content:center;padding:20px;z-index:100}
+    .modal-backdrop.open{display:flex}
+    .modal{max-width:510px;width:100%;background:white;border-radius:8px;box-shadow:0 20px 70px #0005;overflow:hidden}
+    .modal h2{font-size:20px;margin:0;padding:21px 23px;border-bottom:1px solid #e8ebee}
+    .modal-body{padding:21px 24px;color:#4b5867}
+    .modal-body p{margin:0 0 15px}
+    .detail{background:#f4f7f9;border:1px solid #e7eaed;border-radius:5px;padding:14px;display:grid;grid-template-columns:130px 1fr;row-gap:12px}
+    .detail span:nth-child(odd){color:#7e8d9b}
+    .demo-alert{margin-top:16px;color:#986423;font-size:12px}
+    .modal-actions{display:flex;justify-content:flex-end;gap:10px;border-top:1px solid #eaedf0;padding:16px 22px}
+    .toast{position:fixed;right:28px;bottom:24px;background:#22374c;color:white;padding:13px 18px;border-radius:6px;box-shadow:0 8px 30px #122f4d55;display:none;z-index:120}
+    .toast.show{display:block}
+    @media(max-width:900px){.sidebar{width:200px;min-width:200px}.header{padding:0 18px}.header h1{font-size:22px}.workspace{padding:16px}.panel-caption{margin-left:0}.header-note{display:none}}
+    @media(max-width:620px){.app{display:block}.sidebar{width:auto;min-width:unset;min-height:unset}.brand{height:45px}.menu{display:flex;flex-wrap:wrap;gap:0}.nav-item:not(.parent-active){display:none}.nav-item.parent-active{width:100%}.subnav{width:100%;display:flex;flex-direction:row}.subnav button{text-align:center;padding:0}.sidebar-footer{display:none}.header{height:62px}.header h1{font-size:20px}.workspace{padding:11px}.panel{padding:13px}.searchbox{width:100%}.panel-top{gap:7px}.panel-caption{width:100%}.notes{padding:13px}}
+  </style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand"><span class="brand-icon">P</span><span>PX Pay 管理後台</span></div>
+    <nav class="menu" aria-label="主要功能選單">
+      <div class="nav-item"><span class="nav-symbol">♙</span>會員管理 <span class="chevron">⌄</span></div>
+      <div class="nav-item"><span class="nav-symbol">◆</span>行銷活動 <span class="chevron">⌄</span></div>
+      <div class="nav-item"><span class="nav-symbol">▤</span>行銷推廣 <span class="chevron">⌄</span></div>
+      <div class="nav-item"><span class="nav-symbol">▦</span>優惠券 <span class="chevron">⌄</span></div>
+      <div class="nav-item"><span class="nav-symbol">＄</span>生活繳費 <span class="chevron">⌄</span></div>
+      <div class="nav-item"><span class="nav-symbol">▧</span>交易紀錄 <span class="chevron">⌄</span></div>
+      <div class="nav-item parent-active"><span class="nav-symbol">▤</span>線上訂單異常處理 <span class="chevron">⌃</span></div>
+      <div class="subnav">
+        <button type="button" id="tab-online" class="active" aria-current="page">全電商訂單</button>
+        <button type="button" id="tab-split">分批取訂單</button>
+      </div>
+    </nav>
+    <div class="sidebar-footer">操作介面 DEMO<br>所有訂單皆為測試假資料</div>
+  </aside>
+  <main class="main">
+    <header class="header"><h1 id="page-heading">全電商訂單</h1><span class="pill">DEMO／假資料</span><span class="header-note">線上訂單異常處理</span></header>
+    <section class="workspace" id="online-page">
+      <div class="panel">
+        <div class="panel-top">
+          <label class="searchbox"><span aria-hidden="true">⌕</span><input id="query" aria-label="查詢訂單編號" placeholder="請輸入查詢訂單" autocomplete="off" maxlength="60"></label>
+          <button class="searchbtn" type="button" id="search">訂單查詢</button>
+          <button class="ghostbtn" type="button" id="reset">清除</button>
+          <span class="panel-caption">訂單編號為唯一值，精確查詢後最多顯示 1 筆資料</span>
+        </div>
+        <div class="examples">測試訂單（點選自動查詢）：
+          <button type="button" class="example-btn" data-example="PX202611120001">PX202611120001</button>
+          <button type="button" class="example-btn" data-example="PX202611120002">PX202611120002</button>
+          <button type="button" class="example-btn" data-example="PX202611120004">PX202611120004</button>
+        </div>
+        <div class="table-wrap">
+          <table aria-label="全電商訂單單筆查詢結果">
+            <thead><tr>
+              <th>交易時間</th><th>訂單編號</th><th>PXPAY 訂單狀態</th><th>付款方式</th><th>是否點加金</th><th>實際付款金額</th><th>福利點折抵金額</th>
+            </tr></thead>
+            <tbody id="order-rows"></tbody>
+          </table>
+        </div>
+        <div class="resultrow"><span id="result-count">尚未查詢</span><span id="selected-info">請輸入訂單編號</span></div>
+        <div class="action-area">
+          <div class="action-title">手動退款操作</div>
+          <div class="actions">
+            <button type="button" class="refund-btn" id="refund-all" disabled>手動退款(包含點加金)</button>
+            <button type="button" class="refund-btn refund-alt" id="refund-point" disabled>手動退款(只退點加金福利點)</button>
+          </div>
+          <p class="helper">查詢到訂單後即可操作退款。此頁為互動展示，按下確認只會顯示模擬結果，<strong>不會執行真實退款</strong>。</p>
+        </div>
+      </div>
+      <div class="notes">
+        <h3>全電商退款處理備註</h3>
+        <ol>
+          <li>全電商訂單失敗 PXPAY 訂單成功請使用手動退款</li>
+          <li>全電商訂單失敗 PXPAY 訂單失敗 請資訊部進行人工退款</li>
+          <li>全電商訂單失敗 PXPAY 訂單失敗 請使用手動退款</li>
+        </ol>
+        <div class="warn">※ 以上依提供文字原樣呈現；第 2、3 點條件相同但處理方式不同，待確認後再調整實際判斷規則。</div>
+      </div>
+      <div class="log"><strong>DEMO 操作紀錄</strong><p id="activity">尚無模擬退款操作。</p></div>
+    </section>
+    <section class="workspace" id="split-page" hidden>
+      <div class="panel placeholder"><div class="big">▤</div><h2>分批取訂單</h2><p>功能頁面已預留。<br>後續收到查詢條件、列表欄位與操作流程後，再補上可操作的 DEMO。</p></div>
+    </section>
+  </main>
+</div>
+<div id="modal-backdrop" class="modal-backdrop" role="presentation">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <h2 id="modal-title">確認模擬手動退款</h2>
+    <div class="modal-body">
+      <p>請確認以下訂單及退款方式：</p>
+      <div class="detail"><span>訂單編號</span><strong id="modal-order"></strong><span>退款類型</span><strong id="modal-mode"></strong><span>實際付款金額</span><strong id="modal-cash"></strong><span>福利點折抵金額</span><strong id="modal-points"></strong></div>
+      <div class="demo-alert">提醒：確認後只會在本頁顯示模擬紀錄，不會呼叫退款 API，也不會更動真實金流。</div>
+    </div>
+    <div class="modal-actions"><button type="button" class="ghostbtn" id="cancel-refund">取消</button><button type="button" class="searchbtn" id="confirm-refund">確認模擬退款</button></div>
+  </div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+<script>
+(function(){
+  'use strict';
+  // 假訂單資料：訂單編號是唯一值；付款方式只允許信用卡或福利卡。
+  const orders = [
+    { id:'PX202611120001', time:'2026-11-12 05:52:16', px:'成功', payment:'信用卡', add:true, cash:520, points:80 },
+    { id:'PX202611120002', time:'2026-11-12 05:55:30', px:'失敗', payment:'福利卡', add:true, cash:0, points:150 },
+    { id:'PX202611120003', time:'2026-11-12 06:30:23', px:'成功', payment:'信用卡', add:false, cash:890, points:0 },
+    { id:'PX202611120004', time:'2026-11-12 07:10:08', px:'成功', payment:'信用卡', add:false, cash:1200, points:0 },
+    { id:'PX202611120005', time:'2026-11-12 08:20:19', px:'失敗', payment:'福利卡', add:true, cash:200, points:300 },
+    { id:'PX202611120006', time:'2026-11-12 09:55:08', px:'成功', payment:'福利卡', add:true, cash:350, points:150 },
+    { id:'PX202611110118', time:'2026-11-11 16:04:41', px:'成功', payment:'信用卡', add:true, cash:650, points:100 }
+  ];
+  let result = null;
+  let queried = false;
+  let pendingMode = '';
+  const $=id=>document.getElementById(id);
+  const fmt=n=>'NT$ '+n.toLocaleString('en-US');
+  function draw(){
+    const body=$('order-rows');
+    if(!queried){
+      body.innerHTML='<tr><td class="empty" colspan="7">請輸入訂單編號後按「訂單查詢」</td></tr>';
+    }else if(!result){
+      body.innerHTML='<tr><td class="empty" colspan="7">⚠ 查無資料，請確認訂單編號</td></tr>';
+    }else{
+      const o=result;
+      body.innerHTML=`<tr>
+        <td>${o.time}</td><td class="order">${o.id}</td>
+        <td><span class="status ${o.px==='成功'?'good':'bad'}">${o.px}</span></td>
+        <td>${o.payment}</td><td class="${o.add?'yes':'no'}">${o.add?'是':'否'}</td>
+        <td class="amount"><span class="small-currency">NT$</span>${o.cash.toLocaleString('en-US')}</td>
+        <td class="amount"><span class="small-currency">NT$</span>${o.points.toLocaleString('en-US')}</td></tr>`;
+    }
+    $('result-count').textContent=!queried?'尚未查詢':`查詢結果：${result?1:0} 筆`;
+    $('selected-info').textContent=result?`訂單編號：${result.id}`:(!queried?'請輸入訂單編號':'未找到符合的訂單');
+    $('refund-all').disabled=!result;
+    $('refund-point').disabled=!result;
+  }
+  function search(){
+    const q=$('query').value.trim();
+    if(!q){queried=false;result=null;draw();$('query').focus();return;}
+    // 唯一值精確比對，不接受模糊搜尋，也不會一次列出多筆。
+    result=orders.find(o=>o.id.toUpperCase()===q.toUpperCase())||null;
+    queried=true;
+    draw();
+  }
+  $('search').addEventListener('click',search);
+  $('query').addEventListener('keydown',e=>{if(e.key==='Enter')search();});
+  $('query').addEventListener('input',()=>{result=null;queried=false;draw();});
+  $('reset').addEventListener('click',()=>{$('query').value='';result=null;queried=false;draw();$('query').focus();});
+  document.querySelectorAll('[data-example]').forEach(button=>button.addEventListener('click',()=>{$('query').value=button.dataset.example;search();}));
+  function page(mode){const online=mode==='online';$('online-page').hidden=!online;$('split-page').hidden=online;$('tab-online').classList.toggle('active',online);$('tab-split').classList.toggle('active',!online);$('page-heading').textContent=online?'全電商訂單':'分批取訂單';document.title=`${online?'全電商訂單':'分批取訂單'}｜線上訂單異常處理 DEMO`;}
+  $('tab-online').addEventListener('click',()=>page('online'));
+  $('tab-split').addEventListener('click',()=>page('split'));
+  function refund(mode){const o=result;if(!o)return;pendingMode=mode;$('modal-order').textContent=o.id;$('modal-mode').textContent=mode==='all'?'手動退款(包含點加金)':'手動退款(只退點加金福利點)';$('modal-cash').textContent=fmt(o.cash)+ (mode==='points'?'（此次不退此項）':'');$('modal-points').textContent=fmt(o.points);$('modal-backdrop').classList.add('open');$('cancel-refund').focus();}
+  $('refund-all').addEventListener('click',()=>refund('all'));
+  $('refund-point').addEventListener('click',()=>refund('points'));
+  function closeModal(){$('modal-backdrop').classList.remove('open');}
+  $('cancel-refund').addEventListener('click',closeModal);
+  $('modal-backdrop').addEventListener('click',e=>{if(e.target===$('modal-backdrop'))closeModal();});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+  $('confirm-refund').addEventListener('click',()=>{const o=result;if(!o)return;const text=pendingMode==='all'?'包含點加金':'只退點加金福利點';$('activity').textContent=`${new Date().toLocaleString('zh-TW',{hour12:false})}｜訂單 ${o.id}｜${text}｜已完成前端模擬（未執行退款）`;
+    closeModal();$('toast').textContent=`訂單 ${o.id}：模擬退款操作完成（未實際退款）`;$('toast').classList.add('show');window.setTimeout(()=>$('toast').classList.remove('show'),4500);
+  });
+  draw();
+})();
+</script>
+</body>
+</html>
