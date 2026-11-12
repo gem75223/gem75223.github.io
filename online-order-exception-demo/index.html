@@ -99,6 +99,23 @@
     .toast.show{display:block}
     @media(max-width:900px){.sidebar{width:200px;min-width:200px}.header{padding:0 18px}.header h1{font-size:22px}.workspace{padding:16px}.panel-caption{margin-left:0}.header-note{display:none}}
     @media(max-width:620px){.app{display:block}.sidebar{width:auto;min-width:unset;min-height:unset}.brand{height:45px}.menu{display:flex;flex-wrap:wrap;gap:0}.nav-item:not(.parent-active){display:none}.nav-item.parent-active{width:100%}.subnav{width:100%;display:flex;flex-direction:row}.subnav button{text-align:center;padding:0}.sidebar-footer{display:none}.header{height:62px}.header h1{font-size:20px}.workspace{padding:11px}.panel{padding:13px}.searchbox{width:100%}.panel-top{gap:7px}.panel-caption{width:100%}.notes{padding:13px}}
+
+    /* 小時達／分批取訂單：門號改綁 DEMO */
+    .phone-actions{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+    .phone-input{height:44px;width:260px;max-width:100%;border:1px solid #c7cbd1;border-radius:4px;padding:0 12px;color:#344355;background:white}
+    .phone-input:focus{outline:2px solid #d9edff;border-color:#5ba3dd}
+    .phone-input[aria-invalid="true"]{border-color:#d45858;outline-color:#ffe6e6}
+    .phone-error{min-height:18px;color:#c43d47;font-size:12px;margin:8px 0 0}
+    .phone-update{margin-top:13px;border:1px solid #bce2cd;background:#f0fbf4;color:#246b47;border-radius:5px;padding:12px 15px;line-height:1.7;font-size:13px}
+    .phone-update strong{color:#145b38}
+    .phone-cell-new{margin-top:5px;font-size:12px;color:#1a7854;font-weight:700;white-space:nowrap}
+    .phone-flow{display:flex;align-items:center;gap:10px;justify-content:space-between;background:#f4f7f9;border:1px solid #e7eaed;border-radius:6px;padding:15px 12px;margin-top:12px}
+    .phone-node{flex:1;min-width:0;text-align:center}
+    .phone-node small{display:block;font-size:12px;color:#7d8a96;margin-bottom:8px}
+    .phone-node strong{display:block;font-size:19px;letter-spacing:.4px;color:#344355;word-break:break-all}
+    .phone-node.new strong{color:#1677d2}
+    .phone-arrow{font-size:23px;color:#93a6b7}
+    @media(max-width:620px){.phone-actions{align-items:stretch}.phone-actions button,.phone-input{width:100%}.phone-node strong{font-size:16px}}
   </style>
 </head>
 <body>
@@ -115,7 +132,7 @@
       <div class="nav-item parent-active"><span class="nav-symbol">▤</span>線上訂單異常處理 <span class="chevron">⌃</span></div>
       <div class="subnav">
         <button type="button" id="tab-online" class="active" aria-current="page">全電商訂單</button>
-        <button type="button" id="tab-split">分批取訂單</button>
+        <button type="button" id="tab-split">小時達/分批取訂單</button>
       </div>
     </nav>
     <div class="sidebar-footer">操作介面 DEMO<br>所有訂單皆為測試假資料</div>
@@ -165,7 +182,39 @@
       <div class="log"><strong>DEMO 操作紀錄</strong><p id="activity">尚無模擬退款操作。</p></div>
     </section>
     <section class="workspace" id="split-page" hidden>
-      <div class="panel placeholder"><div class="big">▤</div><h2>分批取訂單</h2><p>功能頁面已預留。<br>後續收到查詢條件、列表欄位與操作流程後，再補上可操作的 DEMO。</p></div>
+      <div class="panel">
+        <div class="panel-top">
+          <label class="searchbox"><span aria-hidden="true">⌕</span><input id="split-query" aria-label="查詢小時達或分批取訂單編號" placeholder="請輸入查詢訂單" autocomplete="off" maxlength="60"></label>
+          <button class="searchbtn" type="button" id="split-search">訂單查詢</button>
+          <button class="ghostbtn" type="button" id="split-reset">清除</button>
+          <span class="panel-caption">訂單編號為唯一值，精確查詢後最多顯示 1 筆資料</span>
+        </div>
+        <div class="examples">測試訂單（點選自動查詢）：
+          <button type="button" class="example-btn" data-split-example="HD202611120001">HD202611120001</button>
+          <button type="button" class="example-btn" data-split-example="SP202611120002">SP202611120002</button>
+          <button type="button" class="example-btn" data-split-example="HD202611120003">HD202611120003</button>
+        </div>
+        <div class="table-wrap">
+          <table aria-label="小時達及分批取訂單單筆查詢結果">
+            <thead><tr>
+              <th>交易時間</th><th>訂單編號</th><th>PXPAY 訂單狀態</th><th>付款方式</th><th>訂購時門號</th><th>付款金額</th>
+            </tr></thead>
+            <tbody id="split-order-rows"><tr><td class="empty" colspan="6">請輸入訂單編號後按「訂單查詢」</td></tr></tbody>
+          </table>
+        </div>
+        <div class="resultrow"><span id="split-result-count">尚未查詢</span><span id="split-selected-info">請輸入訂單編號</span></div>
+        <div class="action-area">
+          <div class="action-title">會員門號變更</div>
+          <div class="phone-actions">
+            <button type="button" class="refund-btn" id="change-phone" disabled>修改訂單為會員新門號</button>
+            <input id="new-phone" class="phone-input" type="tel" inputmode="numeric" placeholder="請輸入會員新門號（09xxxxxxxx）" aria-label="會員新門號" autocomplete="off" maxlength="10" disabled>
+          </div>
+          <p class="phone-error" id="phone-error" role="alert"></p>
+          <p class="helper">須先以訂單編號查詢，輸入新門號後點擊修改。此為操作展示，不會變更正式系統會員門號。</p>
+          <div class="phone-update" id="phone-update" role="status" hidden></div>
+        </div>
+      </div>
+      <div class="log"><strong>DEMO 門號變更紀錄</strong><p id="phone-activity">尚無模擬門號變更操作。</p></div>
     </section>
   </main>
 </div>
@@ -178,6 +227,23 @@
       <div class="demo-alert">提醒：確認後只會在本頁顯示模擬紀錄，不會呼叫退款 API，也不會更動真實金流。</div>
     </div>
     <div class="modal-actions"><button type="button" class="ghostbtn" id="cancel-refund">取消</button><button type="button" class="searchbtn" id="confirm-refund">確認模擬退款</button></div>
+  </div>
+</div>
+
+<div id="phone-modal-backdrop" class="modal-backdrop" role="presentation">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="phone-modal-title">
+    <h2 id="phone-modal-title">確認修改訂單為會員新門號</h2>
+    <div class="modal-body">
+      <p>請確認此筆訂單的門號變更內容：</p>
+      <div class="detail"><span>訂單編號</span><strong id="phone-modal-order"></strong><span>訂單類型</span><strong id="phone-modal-type"></strong></div>
+      <div class="phone-flow">
+        <div class="phone-node"><small>原訂購門號（舊）</small><strong id="phone-modal-old"></strong></div>
+        <span class="phone-arrow" aria-hidden="true">→</span>
+        <div class="phone-node new"><small>會員新門號</small><strong id="phone-modal-new"></strong></div>
+      </div>
+      <div class="demo-alert">此為假資料 DEMO，確認後只更新畫面中的模擬資料，不會呼叫 API 或異動正式訂單。</div>
+    </div>
+    <div class="modal-actions"><button type="button" class="ghostbtn" id="cancel-phone">取消</button><button type="button" class="searchbtn" id="confirm-phone">確認變更</button></div>
   </div>
 </div>
 <div class="toast" id="toast" role="status"></div>
@@ -232,7 +298,7 @@
   $('query').addEventListener('input',()=>{result=null;queried=false;draw();});
   $('reset').addEventListener('click',()=>{$('query').value='';result=null;queried=false;draw();$('query').focus();});
   document.querySelectorAll('[data-example]').forEach(button=>button.addEventListener('click',()=>{$('query').value=button.dataset.example;search();}));
-  function page(mode){const online=mode==='online';$('online-page').hidden=!online;$('split-page').hidden=online;$('tab-online').classList.toggle('active',online);$('tab-split').classList.toggle('active',!online);$('page-heading').textContent=online?'全電商訂單':'分批取訂單';document.title=`${online?'全電商訂單':'分批取訂單'}｜線上訂單異常處理 DEMO`;}
+  function page(mode){const online=mode==='online';$('online-page').hidden=!online;$('split-page').hidden=online;$('tab-online').classList.toggle('active',online);$('tab-split').classList.toggle('active',!online);$('page-heading').textContent=online?'全電商訂單':'小時達/分批取訂單';document.title=`${online?'全電商訂單':'小時達/分批取訂單'}｜線上訂單異常處理 DEMO`;}
   $('tab-online').addEventListener('click',()=>page('online'));
   $('tab-split').addEventListener('click',()=>page('split'));
   function refund(mode){const o=result;if(!o)return;pendingMode=mode;$('modal-order').textContent=o.id;$('modal-mode').textContent=mode==='all'?'手動退款(包含點加金)':'手動退款(只退點加金福利點)';$('modal-cash').textContent=fmt(o.cash)+ (mode==='points'?'（此次不退此項）':'');$('modal-points').textContent=fmt(o.points);$('modal-backdrop').classList.add('open');$('cancel-refund').focus();}
@@ -246,6 +312,86 @@
     closeModal();$('toast').textContent=`訂單 ${o.id}：模擬退款操作完成（未實際退款）`;$('toast').classList.add('show');window.setTimeout(()=>$('toast').classList.remove('show'),4500);
   });
   draw();
+})();
+</script>
+
+<script>
+(function(){
+  'use strict';
+  // 小時達／分批取訂單假資料：一筆訂單編號只會對應一筆資料。
+  // originalPhone 保留訂購當下的歷史門號；memberPhone 用於示意訂單目前改綁的會員門號。
+  const orders = [
+    {id:'HD202611120001', type:'小時達', time:'2026-11-12 05:52:16', px:'成功', payment:'信用卡', originalPhone:'0912345678', memberPhone:'0912345678', amount:620},
+    {id:'SP202611120002', type:'分批取', time:'2026-11-12 06:24:09', px:'成功', payment:'福利卡', originalPhone:'0987654321', memberPhone:'0987654321', amount:360},
+    {id:'HD202611120003', type:'小時達', time:'2026-11-12 08:16:48', px:'失敗', payment:'信用卡', originalPhone:'0933222111', memberPhone:'0933222111', amount:1050}
+  ];
+  const $=id=>document.getElementById(id);
+  let selected=null;
+  let queried=false;
+  let pendingPhone=null;
+  function render(){
+    const rows=$('split-order-rows');
+    if(!queried){rows.innerHTML='<tr><td class="empty" colspan="6">請輸入訂單編號後按「訂單查詢」</td></tr>';}
+    else if(!selected){rows.innerHTML='<tr><td class="empty" colspan="6">⚠ 查無資料，請確認訂單編號</td></tr>';}
+    else {
+      const o=selected;
+      rows.innerHTML=`<tr><td>${o.time}</td><td class="order">${o.id}</td><td><span class="status ${o.px==='成功'?'good':'bad'}">${o.px}</span></td><td>${o.payment}</td><td>${o.originalPhone}${o.memberPhone!==o.originalPhone?`<div class="phone-cell-new">目前會員：${o.memberPhone}</div>`:''}</td><td class="amount"><span class="small-currency">NT$</span>${o.amount.toLocaleString('en-US')}</td></tr>`;
+    }
+    $('split-result-count').textContent=!queried?'尚未查詢':`查詢結果：${selected?1:0} 筆`;
+    $('split-selected-info').textContent=selected?`訂單編號：${selected.id}`:(queried?'未找到符合的訂單':'請輸入訂單編號');
+    $('change-phone').disabled=!selected;
+    $('new-phone').disabled=!selected;
+  }
+  function clearMessage(){$('phone-error').textContent='';$('new-phone').removeAttribute('aria-invalid');$('phone-update').hidden=true;}
+  function search(){
+    const q=$('split-query').value.trim();
+    clearMessage();
+    if(!q){selected=null;queried=false;render();$('split-query').focus();return;}
+    selected=orders.find(o=>o.id.toUpperCase()===q.toUpperCase())||null;
+    queried=true;
+    $('new-phone').value='';
+    render();
+  }
+  $('split-search').addEventListener('click',search);
+  $('split-query').addEventListener('keydown',e=>{if(e.key==='Enter')search();});
+  $('split-query').addEventListener('input',()=>{selected=null;queried=false;clearMessage();$('new-phone').value='';render();});
+  $('split-reset').addEventListener('click',()=>{$('split-query').value='';$('new-phone').value='';selected=null;queried=false;clearMessage();render();$('split-query').focus();});
+  document.querySelectorAll('[data-split-example]').forEach(b=>b.addEventListener('click',()=>{$('split-query').value=b.dataset.splitExample;search();}));
+  $('new-phone').addEventListener('input',()=>{$('phone-error').textContent='';$('new-phone').removeAttribute('aria-invalid');$('phone-update').hidden=true;});
+  function showError(message){$('phone-error').textContent=message;$('new-phone').setAttribute('aria-invalid','true');$('new-phone').focus();}
+  $('change-phone').addEventListener('click',()=>{
+    if(!selected)return;
+    const phone=$('new-phone').value.trim();
+    if(!/^09[0-9]{8}$/.test(phone)){showError('請輸入正確的台灣手機門號（09 開頭，共 10 碼）。');return;}
+    if(phone===selected.memberPhone){showError('新門號與目前會員門號相同，請輸入不同的門號。');return;}
+    $('phone-error').textContent='';$('new-phone').removeAttribute('aria-invalid');
+    pendingPhone={order:selected, old:selected.memberPhone, next:phone};
+    $('phone-modal-order').textContent=selected.id;
+    $('phone-modal-type').textContent=selected.type;
+    $('phone-modal-old').textContent=selected.memberPhone;
+    $('phone-modal-new').textContent=phone;
+    $('phone-modal-backdrop').classList.add('open');$('cancel-phone').focus();
+  });
+  function closeModal(){pendingPhone=null;$('phone-modal-backdrop').classList.remove('open');}
+  $('cancel-phone').addEventListener('click',closeModal);
+  $('phone-modal-backdrop').addEventListener('click',e=>{if(e.target===$('phone-modal-backdrop'))closeModal();});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+  $('confirm-phone').addEventListener('click',()=>{
+    if(!pendingPhone)return;
+    const {order,old,next}=pendingPhone;
+    order.memberPhone=next;
+    closeModal();
+    render();
+    const box=$('phone-update');
+    box.textContent='';
+    const strong=document.createElement('strong');strong.textContent='模擬修改成功';
+    box.append(strong,document.createElement('br'),`訂單 ${order.id}｜原會員門號 ${old} → 新會員門號 ${next}`);
+    box.hidden=false;
+    $('phone-activity').textContent=`${new Date().toLocaleString('zh-TW',{hour12:false})}｜訂單 ${order.id}｜${old} → ${next}｜已完成前端模擬（未更新正式資料）`;
+    $('toast').textContent=`訂單 ${order.id}：模擬門號變更成功（未異動正式資料）`;
+    $('toast').classList.add('show');window.setTimeout(()=>$('toast').classList.remove('show'),4500);
+  });
+  render();
 })();
 </script>
 </body>
